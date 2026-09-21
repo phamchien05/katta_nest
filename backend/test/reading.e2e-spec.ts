@@ -219,8 +219,10 @@ describe('Reading (e2e)', () => {
       seedPassage(3n, 'general', 'B1');
       seedPassage(4n, 'science', 'B2');
     });
-    const next = async (qs: string) =>
-      (await get(`/api/reading/next?${qs}`).expect(200)).body.passageId;
+    const next = async (qs: string): Promise<number | null> => {
+      const res = await get(`/api/reading/next?${qs}`).expect(200);
+      return (res.body as { passageId: number | null }).passageId;
+    };
 
     it('đúng chủ đề và cấp độ', async () => {
       for (let i = 0; i < 10; i++) {

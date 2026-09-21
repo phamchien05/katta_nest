@@ -147,10 +147,7 @@ export function validateGenerated(raw: unknown): GeneratedPassage | null {
 }
 
 const normalize = (s: unknown): string =>
-  String(s ?? '')
-    .normalize('NFC')
-    .trim()
-    .toLowerCase();
+  (typeof s === 'string' ? s : '').normalize('NFC').trim().toLowerCase();
 
 export type UserAnswer = string | string[];
 
