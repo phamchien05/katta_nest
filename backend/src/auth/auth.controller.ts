@@ -4,10 +4,11 @@ import {
   Get,
   HttpCode,
   Post,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import type { users } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { toPublicUser } from './auth.types';
@@ -36,9 +37,10 @@ export class AuthController {
   @HttpCode(200)
   async login(
     @Body() dto: LoginDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { user, token } = await this.auth.login(dto);
+    const { user, token } = await this.auth.login(dto, req.ip);
     this.setCookie(res, token);
     return toPublicUser(user);
   }

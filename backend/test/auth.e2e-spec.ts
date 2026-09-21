@@ -174,4 +174,47 @@ describe('Auth (e2e)', () => {
       /katta_token=;/,
     );
   });
+
+  it('đăng nhập sai 5 lần thì bị khoá 429 (kể cả khi lần 6 nhập đúng); người khác không bị ảnh hưởng', async () => {
+    await register({
+      name: 'An',
+      email: 'an@example.com',
+      password: 'secret123',
+    });
+    await register({
+      name: 'Bình',
+      email: 'binh@example.com',
+      password: 'secret123',
+    });
+    const login = (email: string, password: string) =>
+      request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email, password });
+
+    for (let i = 0; i < 5; i++)
+      await login('an@example.com', 'sai-sai-sai').expect(401);
+    const locked = await login('an@example.com', 'secret123').expect(429);
+    expect(locked.body.message).toMatch(/Quá nhiều lần/);
+    // email viết hoa/thường khác nhau vẫn cùng một bộ đếm
+    await login('AN@example.com', 'secret123').expect(429);
+    // email khác cùng IP vẫn đăng nhập bình thường
+    await login('binh@example.com', 'secret123').expect(200);
+  });
+
+  it('đăng nhập đúng xoá bộ đếm sai trước đó', async () => {
+    await register({
+      name: 'An',
+      email: 'an@example.com',
+      password: 'secret123',
+    });
+    const login = (password: string) =>
+      request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: 'an@example.com', password });
+
+    for (let i = 0; i < 4; i++) await login('sai-sai-sai').expect(401);
+    await login('secret123').expect(200);
+    for (let i = 0; i < 4; i++) await login('sai-sai-sai').expect(401);
+    await login('secret123').expect(200); // vẫn chưa bị khoá vì bộ đếm đã được xoá giữa chừng
+  });
 });

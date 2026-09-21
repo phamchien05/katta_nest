@@ -1,7 +1,8 @@
 import { Menu } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
+import { rememberPage } from '../lib/lastPage'
 import { Header } from './Header'
 import { Logo } from './Logo'
 import { Sidebar } from './Sidebar'
@@ -10,6 +11,12 @@ import { Sidebar } from './Sidebar'
 export function AppLayout() {
   const { t } = useTranslation()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const location = useLocation()
+
+  // Ghi nhớ trang đang đứng (trừ chính trang Phản hồi) để form Phản hồi biết người dùng gặp vấn đề ở đâu
+  useEffect(() => {
+    if (!location.pathname.startsWith('/feedback')) rememberPage(location.pathname + location.search)
+  }, [location.pathname, location.search])
 
   return (
     <div className="flex min-h-screen bg-katta-bg">

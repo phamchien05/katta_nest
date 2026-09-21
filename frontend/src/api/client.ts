@@ -24,11 +24,14 @@ async function toApiError(res: Response): Promise<ApiError> {
 }
 
 export async function api<T = void>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
+  const { body } = init
+  // FormData (upload file) để trình duyệt tự đặt Content-Type kèm boundary; còn lại gửi JSON
+  const isForm = typeof FormData !== 'undefined' && body instanceof FormData
   const res = await fetch(`/api${path}`, {
-    method: init.method ?? (init.body === undefined ? 'GET' : 'POST'),
+    method: init.method ?? (body === undefined ? 'GET' : 'POST'),
     credentials: 'include',
-    headers: init.body === undefined ? undefined : { 'Content-Type': 'application/json' },
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+    headers: body === undefined || isForm ? undefined : { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
   })
 
   if (!res.ok) throw await toApiError(res)

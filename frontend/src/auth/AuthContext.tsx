@@ -16,6 +16,8 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  /** Cập nhật thông tin user đang đăng nhập (sau khi đổi tên/email/cài đặt) */
+  updateUser: (user: User) => void
 }
 
 const AuthContext = createContext<AuthState | null>(null)
@@ -51,7 +53,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
-  const value = useMemo(() => ({ user, login, register, logout }), [user, login, register, logout])
+  const updateUser = useCallback((next: User) => setUser(next), [])
+
+  const value = useMemo(() => ({ user, login, register, logout, updateUser }), [user, login, register, logout, updateUser])
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

@@ -1,7 +1,7 @@
 import { Bell, LogOut, User as UserIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { findNavItem, HEADER_TAGLINES } from '../config/nav'
 import { applyLanguage } from '../i18n'
@@ -24,6 +24,7 @@ export function Header() {
   const { t, i18n } = useTranslation()
   const { user, logout } = useAuth()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [bellOpen, setBellOpen] = useState(false)
   const [userOpen, setUserOpen] = useState(false)
 
@@ -77,6 +78,10 @@ export function Header() {
             <div className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-lg border border-gray-100 py-2 z-50">
               <button
                 type="button"
+                onClick={() => {
+                  setUserOpen(false)
+                  navigate('/profile')
+                }}
                 className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:bg-katta-bg"
               >
                 <UserIcon className="w-4 h-4" /> {t('nav.profile')}

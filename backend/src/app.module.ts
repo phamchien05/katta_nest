@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
+import { FeedbackModule } from './feedback/feedback.module';
 import { GeminiModule } from './gemini/gemini.module';
 import { GrammarModule } from './grammar/grammar.module';
 import { HealthController } from './health/health.controller';
@@ -27,6 +29,8 @@ import { VocabularyModule } from './vocabulary/vocabulary.module';
     ListeningModule,
     ProgressModule,
     StatisticsModule,
+    AccountModule,
+    FeedbackModule,
   ],
   controllers: [HealthController],
 })

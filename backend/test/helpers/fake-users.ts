@@ -43,6 +43,28 @@ export function createFakeUsers() {
         rows.push(user);
         return Promise.resolve(user);
       },
+      update: ({
+        where,
+        data,
+      }: {
+        where: { id: bigint };
+        data: Partial<FakeUser>;
+      }) => {
+        const user = rows.find((u) => u.id === where.id);
+        if (!user) return Promise.reject(new Error('fake users: not found'));
+        Object.assign(
+          user,
+          Object.fromEntries(
+            Object.entries(data).filter(([, v]) => v !== undefined),
+          ),
+        );
+        return Promise.resolve(user);
+      },
+      delete: ({ where }: { where: { id: bigint } }) => {
+        const i = rows.findIndex((u) => u.id === where.id);
+        if (i < 0) return Promise.reject(new Error('fake users: not found'));
+        return Promise.resolve(rows.splice(i, 1)[0]);
+      },
     },
   };
 }

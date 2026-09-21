@@ -6,3 +6,6 @@ node_modules
 
 # build output
 /dist
+
+# Ảnh người dùng tải lên (phản hồi kèm ảnh chụp màn hình) - không đưa lên git
+/uploads

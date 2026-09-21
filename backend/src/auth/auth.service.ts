@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
+import { LoginThrottle } from './login-throttle';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -18,6 +19,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly throttle: LoginThrottle,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -40,14 +42,19 @@ export class AuthService {
     return { user, token: await this.sign(user.id) };
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, ip?: string) {
+    const key = LoginThrottle.key(dto.email, ip);
+    this.throttle.assertAllowed(key);
+
     const user = await this.prisma.users.findUnique({
       where: { email: dto.email.toLowerCase() },
     });
     // Cùng 1 thông báo cho "sai email" và "sai mật khẩu" để không lộ email nào đã đăng ký
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
+      this.throttle.recordFailure(key);
       throw new UnauthorizedException('Email hoặc mật khẩu không đúng.');
     }
+    this.throttle.clear(key);
     return { user, token: await this.sign(user.id) };
   }
 

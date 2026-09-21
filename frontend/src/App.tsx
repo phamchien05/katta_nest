@@ -6,6 +6,7 @@ import { NAV_ITEMS } from './config/nav'
 import { AuthForm } from './pages/AuthForm'
 import { Home } from './pages/Home'
 import { Placeholder } from './pages/Placeholder'
+import { FeedbackPage } from './pages/feedback/FeedbackPage'
 import { GrammarHome } from './pages/grammar/GrammarHome'
 import { GrammarPractice } from './pages/grammar/GrammarPractice'
 import { GrammarQuiz } from './pages/grammar/GrammarQuiz'
@@ -15,6 +16,8 @@ import { ListeningGeneralRedirect, ListeningPractice } from './pages/listening/L
 import { ProgressPage } from './pages/progress/ProgressPage'
 import { ReadingHome } from './pages/reading/ReadingHome'
 import { ReadingGeneralRedirect, ReadingPractice } from './pages/reading/ReadingPractice'
+import { ProfilePage } from './pages/settings/ProfilePage'
+import { SettingsPage } from './pages/settings/SettingsPage'
 import { StatisticsPage } from './pages/statistics/StatisticsPage'
 import { TranslateHome } from './pages/translate/TranslateHome'
 import { TranslatePractice } from './pages/translate/TranslatePractice'
@@ -22,7 +25,7 @@ import { VocabularyLevels } from './pages/vocabulary/VocabularyLevels'
 import { VocabularyQuiz } from './pages/vocabulary/VocabularyQuiz'
 
 // Các module đã chuyển xong (có trang thật) - phần còn lại vẫn là trang giữ chỗ
-const MIGRATED_PATHS = new Set(['/', '/vocabulary', '/translate', '/reading', '/grammar', '/listening', '/progress', '/statistics'])
+const MIGRATED_PATHS = new Set(['/', '/vocabulary', '/translate', '/reading', '/grammar', '/listening', '/progress', '/statistics', '/feedback', '/settings'])
 
 export default function App() {
   return (
@@ -49,6 +52,9 @@ export default function App() {
           <Route path="/listening" element={<ListeningHome />} />
           <Route path="/listening/general/:level" element={<ListeningGeneralRedirect />} />
           <Route path="/listening/:id" element={<ListeningPractice />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/statistics" element={<StatisticsPage />} />
           <Route path="/reading" element={<ReadingHome />} />
