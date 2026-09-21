@@ -1,6 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, Min } from 'class-validator';
-import { ALL_LEVELS, TOPICS, type Topic } from '../reading.logic';
+import { TOPICS, type Topic } from '../listening.logic';
 
 // "1,2,3" -> [1,2,3] (bỏ phần tử không phải số dương, tối đa 50 phần tử)
 const toIdList = ({ value }: { value: unknown }): number[] =>
@@ -16,18 +16,17 @@ export class NextQueryDto {
   @IsIn(TOPICS)
   topic!: Topic;
 
+  // Chỉ dùng cho topic "general" (các topic khác có cấp độ cố định)
   @IsOptional()
-  @IsIn(ALL_LEVELS)
+  @IsIn(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])
   level?: string;
 
-  // Bài đang xem - luôn bị loại khỏi lượt chọn kế tiếp
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   exclude?: number;
 
-  // Các bài user vừa lấy ra xem trong phiên (dù chưa nộp) - do trình duyệt ghi nhớ (API không có session)
   @IsOptional()
   @Transform(toIdList)
   seen?: number[];

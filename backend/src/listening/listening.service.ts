@@ -6,30 +6,35 @@ import {
 } from '@nestjs/common';
 import type { users } from '@prisma/client';
 import { choosePassageId } from '../common/picker';
+import { cleanAnswers, gradeAnswers, parseStringArray } from '../common/quiz';
 import { GeminiService } from '../gemini/gemini.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { cleanAnswers, gradeAnswers, parseStringArray } from '../common/quiz';
 import {
   buildPrompt,
   GENERAL_LEVELS,
+  levelFor,
+  MAX_PLAYS,
+  pickScenario,
   SCHEMA,
   Topic,
   validateGenerated,
-} from './reading.logic';
+} from './listening.logic';
+import { PlayCounter } from './play-counter';
 
 @Injectable()
-export class ReadingService {
-  private readonly logger = new Logger(ReadingService.name);
+export class ListeningService {
+  private readonly logger = new Logger(ListeningService.name);
   private readonly inflight = new Set<Promise<void>>();
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly gemini: GeminiService,
+    private readonly plays: PlayCounter,
   ) {}
 
-  // Danh sách bài để user chọn (mới nhất trước). "general" không liệt kê từng bài - đi theo cấp độ CEFR.
+  // Danh sách bài (mới nhất trước). "general" đi theo cấp độ CEFR nên không liệt kê từng bài.
   async listPassages() {
-    const rows = await this.prisma.reading_passages.findMany({
+    const rows = await this.prisma.listening_passages.findMany({
       where: { topic: { not: 'general' } },
       select: { id: true, topic: true, title: true, level: true },
       orderBy: { id: 'desc' },
@@ -42,26 +47,24 @@ export class ReadingService {
     }));
   }
 
-  // Tab "Đã đọc"
   async history(userId: bigint) {
-    const rows = await this.prisma.reading_submissions.findMany({
+    const rows = await this.prisma.listening_submissions.findMany({
       where: { user_id: userId },
-      include: { reading_passages: true },
+      include: { listening_passages: true },
       orderBy: { created_at: 'desc' },
     });
     return rows.map((r) => ({
       id: Number(r.id),
       passageId: Number(r.passage_id),
-      topic: r.reading_passages.topic,
-      title: r.reading_passages.title,
+      topic: r.listening_passages.topic,
+      title: r.listening_passages.title,
       score: r.score,
       total: r.total,
       createdAt: r.created_at,
     }));
   }
 
-  // Chọn ngẫu nhiên 1 bài của topic (+ level), tránh bài user đã nộp, bài vừa xem trong phiên và bài đang xem.
-  // Xem hết rồi thì rơi về random (trừ bài đang xem), rồi cuối cùng là random toàn bộ.
+  // Chọn bài chưa xem (xem common/picker). Chỉ "general" mới lọc theo cấp độ - các chủ đề khác có cấp cố định.
   async pickUnseen(
     userId: bigint,
     topic: Topic,
@@ -78,12 +81,12 @@ export class ReadingService {
       );
     }
 
-    const attempted = await this.prisma.reading_submissions.findMany({
+    const attempted = await this.prisma.listening_submissions.findMany({
       where: { user_id: userId },
       select: { passage_id: true },
     });
-    const pool = await this.prisma.reading_passages.findMany({
-      where: { topic, ...(level ? { level } : {}) },
+    const pool = await this.prisma.listening_passages.findMany({
+      where: { topic, ...(topic === 'general' ? { level } : {}) },
       select: { id: true },
     });
     const chosen = choosePassageId(
@@ -93,28 +96,20 @@ export class ReadingService {
     return chosen === undefined ? null : Number(chosen);
   }
 
-  // Bài + câu hỏi để làm. KHÔNG gửi đáp án đúng xuống trình duyệt (chỉ lộ sau khi nộp bài).
+  // Bài + câu hỏi để làm. KHÔNG kèm transcript (chỉ lấy khi bấm nghe) và KHÔNG kèm đáp án đúng.
   async getPassage(user: users, id: number) {
-    const passage = await this.prisma.reading_passages.findUnique({
-      where: { id: BigInt(id) },
-      include: { reading_questions: { orderBy: { order: 'asc' } } },
-    });
-    if (!passage) throw new NotFoundException('Passage not found.');
+    const passage = await this.findWithQuestions(id);
 
-    // Vừa vào làm 1 bài -> âm thầm nhờ Gemini sinh 1 bài mới bù vào kho cùng chủ đề/cấp độ
-    this.replenishInBackground(
-      user,
-      passage.topic as Topic,
-      passage.level ?? 'B2',
-    );
+    this.replenishInBackground(user, passage.topic as Topic, passage.level);
 
     return {
       id: Number(passage.id),
       topic: passage.topic,
       level: passage.level,
       title: passage.title,
-      content: passage.content,
-      questions: passage.reading_questions.map((q) => ({
+      maxPlays: MAX_PLAYS,
+      playsLeft: Math.max(0, MAX_PLAYS - this.plays.used(user.id, id)),
+      questions: passage.listening_questions.map((q) => ({
         id: Number(q.id),
         type: q.type,
         question: q.question,
@@ -123,36 +118,49 @@ export class ReadingService {
     };
   }
 
-  // Chấm 1 lần cho tất cả câu. Nhận TOÀN BỘ đáp án cùng lúc (không đồng bộ từng câu) - tránh các request rời rạc ghi đè nhau.
+  // Trả lời thoại để trình duyệt đọc thành giọng nói. Mỗi lần gọi trừ 1 lượt nghe (tối đa MAX_PLAYS) TRÊN SERVER -
+  // transcript không nhúng sẵn trong trang nên không xem trước được chữ.
+  async play(user: users, id: number) {
+    const passage = await this.prisma.listening_passages.findUnique({
+      where: { id: BigInt(id) },
+    });
+    if (!passage) throw new NotFoundException('Passage not found.');
+
+    if (!this.plays.consume(user.id, id, MAX_PLAYS)) {
+      return { allowed: false, text: '', playsLeft: 0 };
+    }
+    return {
+      allowed: true,
+      text: passage.transcript,
+      playsLeft: Math.max(0, MAX_PLAYS - this.plays.used(user.id, id)),
+    };
+  }
+
   async submit(
     userId: bigint,
     passageId: number,
     rawAnswers: Record<string, unknown>,
     durationSeconds?: number,
   ) {
-    const passage = await this.prisma.reading_passages.findUnique({
-      where: { id: BigInt(passageId) },
-      include: { reading_questions: { orderBy: { order: 'asc' } } },
-    });
-    if (!passage) throw new NotFoundException('Passage not found.');
-
+    const passage = await this.findWithQuestions(passageId);
     const answers = cleanAnswers(rawAnswers);
-    const questions = passage.reading_questions;
-    if (questions.some((q) => answers[String(q.id)] === undefined)) {
+    const questions = passage.listening_questions;
+    if (
+      questions.length === 0 ||
+      questions.some((q) => answers[String(q.id)] === undefined)
+    ) {
       throw new BadRequestException('Every question must be answered.');
     }
 
     const { score, results } = gradeAnswers(questions, answers);
-
     const now = new Date();
     await this.prisma.$transaction(async (tx) => {
-      await tx.reading_submissions.create({
+      await tx.listening_submissions.create({
         data: {
           user_id: userId,
           passage_id: passage.id,
           score,
           total: questions.length,
-          // Chỉ lưu đáp án của các câu thuộc bài này, đúng định dạng Laravel ({ "<questionId>": ... })
           answers: JSON.stringify(
             Object.fromEntries(
               questions.map((q) => [String(q.id), answers[String(q.id)]]),
@@ -165,7 +173,7 @@ export class ReadingService {
       await tx.study_sessions.create({
         data: {
           user_id: userId,
-          type: 'reading',
+          type: 'listening',
           duration_seconds: Math.max(1, durationSeconds ?? 0),
           completed_at: now,
           created_at: now,
@@ -173,14 +181,32 @@ export class ReadingService {
         },
       });
     });
+    this.plays.reset(userId, passageId);
 
-    return { score, total: questions.length, results };
+    // Nộp bài xong mới được xem lời thoại
+    return {
+      score,
+      total: questions.length,
+      results,
+      transcript: passage.transcript,
+    };
   }
+
+  private async findWithQuestions(id: number) {
+    const passage = await this.prisma.listening_passages.findUnique({
+      where: { id: BigInt(id) },
+      include: { listening_questions: { orderBy: { order: 'asc' } } },
+    });
+    if (!passage) throw new NotFoundException('Passage not found.');
+    return passage;
+  }
+
+  // ---------- Kho tự bù ----------
 
   private replenishInBackground(
     user: users,
     topic: Topic,
-    level: string,
+    level: string | null,
   ): void {
     const apiKey = this.gemini.keyFor(user);
     if (!apiKey) return;
@@ -198,46 +224,56 @@ export class ReadingService {
   private async replenish(
     apiKey: string,
     topic: Topic,
-    level: string,
+    requestedLevel: string | null,
   ): Promise<void> {
+    // Chủ đề không phải "general" luôn gắn cứng 1 cấp độ theo dạng bài
+    const level = levelFor(topic, requestedLevel);
+
+    // Gửi kèm tiêu đề các bài đã có cùng topic/level - tránh AI sinh trùng/gần giống nội dung cũ
+    const existing = await this.prisma.listening_passages.findMany({
+      where: { topic, ...(topic === 'general' ? { level } : {}) },
+      select: { title: true },
+    });
+
     // Chỉ thử lại 1 lần - đây là việc ngầm, không nên giữ kết nối quá lâu
     const raw = await this.gemini.generate(
       apiKey,
-      buildPrompt(topic, level),
+      buildPrompt(
+        topic,
+        level,
+        pickScenario(topic),
+        existing.map((e) => e.title),
+      ),
       SCHEMA,
-      {
-        maxRetries: 1,
-      },
+      { maxRetries: 1 },
     );
     const generated = validateGenerated(raw);
     if (!generated) return;
 
     const now = new Date();
     await this.prisma.$transaction(async (tx) => {
-      const passage = await tx.reading_passages.create({
+      const passage = await tx.listening_passages.create({
         data: {
           topic,
-          level,
+          level: topic === 'general' ? level : null,
           title: generated.title,
-          content: generated.content,
+          transcript: generated.transcript,
           created_at: now,
           updated_at: now,
         },
       });
-      for (const [order, q] of generated.questions.entries()) {
-        await tx.reading_questions.create({
-          data: {
-            passage_id: passage.id,
-            type: q.type,
-            question: q.question,
-            options: JSON.stringify(q.options),
-            correct_answer: JSON.stringify(q.correct_answer),
-            order,
-            created_at: now,
-            updated_at: now,
-          },
-        });
-      }
+      await tx.listening_questions.createMany({
+        data: generated.questions.map((q, order) => ({
+          passage_id: passage.id,
+          type: q.type,
+          question: q.question,
+          options: JSON.stringify(q.options),
+          correct_answer: JSON.stringify(q.correct_answer),
+          order,
+          created_at: now,
+          updated_at: now,
+        })),
+      });
     });
   }
 

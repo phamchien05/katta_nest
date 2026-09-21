@@ -12,7 +12,7 @@ import type { users } from '@prisma/client';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { requireLevel } from '../common/levels';
-import { SubmitSetDto } from './dto/grammar.dto';
+import { SubmitAnswersDto } from '../common/dto/submit-answers.dto';
 import { PRACTICE_TOPIC_KEYS } from './grammar.logic';
 import { GrammarService } from './grammar.service';
 
@@ -58,7 +58,7 @@ export class GrammarController {
   submit(
     @CurrentUser() user: users,
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: SubmitSetDto,
+    @Body() dto: SubmitAnswersDto,
   ) {
     return this.grammar.submit(user, id, dto.answers, dto.durationSeconds);
   }

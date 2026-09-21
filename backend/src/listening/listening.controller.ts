@@ -13,29 +13,28 @@ import type { users } from '@prisma/client';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SubmitAnswersDto } from '../common/dto/submit-answers.dto';
-import { NextQueryDto } from './dto/reading.dto';
-import { ReadingService } from './reading.service';
+import { NextQueryDto } from './dto/listening.dto';
+import { ListeningService } from './listening.service';
 
-@Controller('reading')
+@Controller('listening')
 @UseGuards(JwtAuthGuard)
-export class ReadingController {
-  constructor(private readonly reading: ReadingService) {}
+export class ListeningController {
+  constructor(private readonly listening: ListeningService) {}
 
   @Get('passages')
   async passages() {
-    return { items: await this.reading.listPassages() };
+    return { items: await this.listening.listPassages() };
   }
 
   @Get('history')
   async history(@CurrentUser() user: users) {
-    return { items: await this.reading.history(user.id) };
+    return { items: await this.listening.history(user.id) };
   }
 
-  // Xin id của 1 bài chưa xem để mở (topic + level, hoặc "bài tiếp theo" khi truyền exclude)
   @Get('next')
   async next(@CurrentUser() user: users, @Query() q: NextQueryDto) {
     return {
-      passageId: await this.reading.pickUnseen(
+      passageId: await this.listening.pickUnseen(
         user.id,
         q.topic,
         q.level,
@@ -47,7 +46,14 @@ export class ReadingController {
 
   @Get('passages/:id')
   passage(@CurrentUser() user: users, @Param('id', ParseIntPipe) id: number) {
-    return this.reading.getPassage(user, id);
+    return this.listening.getPassage(user, id);
+  }
+
+  // Bấm nghe: nhận lời thoại để đọc thành giọng nói (trừ 1 lượt nghe)
+  @Post('passages/:id/play')
+  @HttpCode(200)
+  play(@CurrentUser() user: users, @Param('id', ParseIntPipe) id: number) {
+    return this.listening.play(user, id);
   }
 
   @Post('passages/:id/submit')
@@ -57,6 +63,6 @@ export class ReadingController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: SubmitAnswersDto,
   ) {
-    return this.reading.submit(user.id, id, dto.answers, dto.durationSeconds);
+    return this.listening.submit(user.id, id, dto.answers, dto.durationSeconds);
   }
 }

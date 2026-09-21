@@ -10,6 +10,8 @@ import { GrammarHome } from './pages/grammar/GrammarHome'
 import { GrammarPractice } from './pages/grammar/GrammarPractice'
 import { GrammarQuiz } from './pages/grammar/GrammarQuiz'
 import { GrammarTheory } from './pages/grammar/GrammarTheory'
+import { ListeningHome } from './pages/listening/ListeningHome'
+import { ListeningGeneralRedirect, ListeningPractice } from './pages/listening/ListeningPractice'
 import { ReadingHome } from './pages/reading/ReadingHome'
 import { ReadingGeneralRedirect, ReadingPractice } from './pages/reading/ReadingPractice'
 import { TranslateHome } from './pages/translate/TranslateHome'
@@ -18,7 +20,7 @@ import { VocabularyLevels } from './pages/vocabulary/VocabularyLevels'
 import { VocabularyQuiz } from './pages/vocabulary/VocabularyQuiz'
 
 // Các module đã chuyển xong (có trang thật) - phần còn lại vẫn là trang giữ chỗ
-const MIGRATED_PATHS = new Set(['/', '/vocabulary', '/translate', '/reading', '/grammar'])
+const MIGRATED_PATHS = new Set(['/', '/vocabulary', '/translate', '/reading', '/grammar', '/listening'])
 
 export default function App() {
   return (
@@ -42,6 +44,9 @@ export default function App() {
           <Route path="/grammar/theory/:slug" element={<GrammarTheory />} />
           <Route path="/grammar/practice" element={<GrammarPractice />} />
           <Route path="/grammar/practice/set/:id" element={<GrammarQuiz />} />
+          <Route path="/listening" element={<ListeningHome />} />
+          <Route path="/listening/general/:level" element={<ListeningGeneralRedirect />} />
+          <Route path="/listening/:id" element={<ListeningPractice />} />
           <Route path="/reading" element={<ReadingHome />} />
           <Route path="/reading/general/:level" element={<ReadingGeneralRedirect />} />
           <Route path="/reading/:id" element={<ReadingPractice />} />

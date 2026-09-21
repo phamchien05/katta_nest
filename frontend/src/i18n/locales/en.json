@@ -148,7 +148,8 @@
       "science": "Science",
       "society": "Society",
       "technology": "Technology"
-    }
+    },
+    "start": "→ Start reading"
   },
   "quiz": {
     "fill_placeholder": "Type your answer...",
@@ -205,5 +206,38 @@
     "submitting": "Submitting...",
     "submit_failed": "Could not submit your answers. Please try again.",
     "back_to_topics": "Back to topics"
+  },
+  "listening": {
+    "subtitle": "Pick a clip to practice IELTS-style listening comprehension.",
+    "search_placeholder": "Search listening clips...",
+    "tab_all": "All",
+    "tab_history": "History",
+    "start": "→ Start Listening",
+    "back_to_passages": "← Back to list",
+    "submit_button": "Answer All Questions",
+    "submitting": "Submitting...",
+    "next_article": "Next clip →",
+    "history_empty": "You haven't listened to anything yet.",
+    "retry": "Retry",
+    "no_results": "No matching listening clips found.",
+    "loading": "Loading...",
+    "load_failed": "Could not load the clip. Please try again.",
+    "submit_failed": "Could not submit your answers. Please try again.",
+    "play_failed": "Could not play the clip. Please try again.",
+    "play_button": "Play",
+    "pause_button": "Pause",
+    "speed_label": "Speed",
+    "plays_remaining_label": "Plays left:",
+    "plays_used_up": "You've used all your plays for this clip.",
+    "unsupported_browser": "Your browser does not support text-to-speech. Please use a recent Chrome/Edge.",
+    "transcript_heading": "Transcript",
+    "transcript_hint": "Listen only - the transcript is hidden until you submit.",
+    "topics": {
+      "general": "General",
+      "everyday_conversation": "Everyday Conversation",
+      "social_monologue": "Announcement / Guide",
+      "academic_discussion": "Academic Discussion",
+      "academic_lecture": "Academic Lecture"
+    }
   }
 }

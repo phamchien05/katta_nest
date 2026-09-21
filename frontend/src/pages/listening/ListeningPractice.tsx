@@ -7,34 +7,34 @@ import {
   fetchPassage,
   GENERAL_LEVELS,
   submitAnswers,
-  type Answer,
-  type PassageDetail,
-  type SubmitResult,
-} from '../../api/reading'
+  type ListeningPassage,
+  type ListeningSubmitResult,
+} from '../../api/listening'
 import { GeneralLevelRedirect } from '../../components/GeneralLevelRedirect'
 import { QuestionCard } from '../../components/QuestionCard'
-import { isAnswered } from '../../lib/answers'
+import { isAnswered, type AnswerValue } from '../../lib/answers'
 import { getSeen, markSeen } from '../../lib/seen'
+import { AudioPlayer } from './AudioPlayer'
 
-// /reading/general/:level - random 1 bài chưa xem của cấp đó rồi chuyển sang trang làm bài
-export function ReadingGeneralRedirect() {
-  return <GeneralLevelRedirect module="reading" levels={GENERAL_LEVELS} fetchNext={fetchNext} />
+// /listening/general/:level - random 1 bài chưa xem của cấp đó rồi chuyển sang trang làm bài
+export function ListeningGeneralRedirect() {
+  return <GeneralLevelRedirect module="listening" levels={GENERAL_LEVELS} fetchNext={fetchNext} />
 }
 
-// /reading/:id - làm 1 bài đọc: bài bên trái, câu hỏi bên phải, chấm 1 lần cho tất cả câu
-export function ReadingPractice() {
+// /listening/:id
+export function ListeningPractice() {
   const { id } = useParams()
   const passageId = Number(id)
-  return Number.isInteger(passageId) && passageId > 0 ? <Practice key={passageId} passageId={passageId} /> : <Navigate to="/reading" replace />
+  return Number.isInteger(passageId) && passageId > 0 ? <Practice key={passageId} passageId={passageId} /> : <Navigate to="/listening" replace />
 }
 
 function Practice({ passageId }: { passageId: number }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [passage, setPassage] = useState<PassageDetail | null>(null)
+  const [passage, setPassage] = useState<ListeningPassage | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [answers, setAnswers] = useState<Record<number, Answer>>({})
-  const [result, setResult] = useState<SubmitResult | null>(null)
+  const [answers, setAnswers] = useState<Record<number, AnswerValue>>({})
+  const [result, setResult] = useState<ListeningSubmitResult | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [startedAt] = useState(() => Date.now())
@@ -44,22 +44,21 @@ function Practice({ passageId }: { passageId: number }) {
     fetchPassage(passageId)
       .then((p) => {
         if (cancelled) return
-        markSeen(p.topic, p.level, passageId) // đã lấy ra xem thì nhớ lại để lần "bài tiếp theo" không trúng lại
+        markSeen(p.topic, p.level, passageId)
         setPassage(p)
       })
-      .catch((e: unknown) => !cancelled && setLoadError(e instanceof ApiError ? e.message : t('reading.load_failed')))
+      .catch((e: unknown) => !cancelled && setLoadError(e instanceof ApiError ? e.message : t('listening.load_failed')))
     return () => {
       cancelled = true
     }
   }, [passageId, t])
 
   if (loadError) return <p className="mt-6 text-katta-accent">{loadError}</p>
-  if (!passage) return <p className="mt-6 text-gray-400">{t('reading.loading')}</p>
+  if (!passage) return <p className="mt-6 text-gray-400">{t('listening.loading')}</p>
 
   const total = passage.questions.length
   const answeredCount = passage.questions.filter((q) => isAnswered(answers[q.id])).length
   const canSubmit = answeredCount === total && total > 0 && !submitting
-  const resultOf = (qid: number) => result?.results.find((r) => r.questionId === qid)
 
   const submit = async () => {
     setSubmitting(true)
@@ -67,30 +66,29 @@ function Practice({ passageId }: { passageId: number }) {
     try {
       setResult(await submitAnswers(passage.id, answers, Math.max(1, Math.round((Date.now() - startedAt) / 1000))))
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : t('reading.submit_failed'))
+      setError(e instanceof ApiError ? e.message : t('listening.submit_failed'))
     } finally {
       setSubmitting(false)
     }
   }
 
-  // Bài tiếp theo cùng chủ đề (+ cấp độ), tránh bài đang xem và các bài vừa xem
-  const nextArticle = async () => {
+  const nextClip = async () => {
     try {
       const { passageId: next } = await fetchNext(passage.topic, passage.level, {
         exclude: passage.id,
         seen: getSeen(passage.topic, passage.level),
       })
-      navigate(next ? `/reading/${next}` : '/reading')
+      navigate(next ? `/listening/${next}` : '/listening')
     } catch {
-      navigate('/reading')
+      navigate('/listening')
     }
   }
 
   return (
     <div className="mt-4">
       <div className="flex items-center justify-between mb-4">
-        <Link to="/reading" className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-katta-primary">
-          {t('reading.back_to_passages')}
+        <Link to="/listening" className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-katta-primary">
+          {t('listening.back_to_passages')}
         </Link>
         {!result && <span className="text-xs text-gray-400">{t('reading.answered_count', { answered: answeredCount, total })}</span>}
       </div>
@@ -99,18 +97,27 @@ function Practice({ passageId }: { passageId: number }) {
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden lg:sticky lg:top-6">
           <div className="bg-linear-to-br from-indigo-900 to-katta-primary px-6 py-5">
             <p className="text-[11px] font-bold tracking-widest text-white/70 uppercase">
-              {t(`reading.topics.${passage.topic}`, { defaultValue: passage.topic })}
+              {t(`listening.topics.${passage.topic}`, { defaultValue: passage.topic })}
             </p>
             <h1 className="text-xl font-bold text-white mt-1">{passage.title}</h1>
           </div>
           <div className="p-6">
-            <p className="text-gray-700 leading-relaxed whitespace-pre-line">{passage.content}</p>
+            <AudioPlayer passageId={passage.id} initialPlaysLeft={passage.playsLeft} transcript={result?.transcript} />
+
+            {!result ? (
+              <p className="text-xs text-gray-400 text-center mt-4">{t('listening.transcript_hint')}</p>
+            ) : (
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">{t('listening.transcript_heading')}</p>
+                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{result.transcript}</p>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="space-y-3">
           {passage.questions.map((q, i) => {
-            const r = resultOf(q.id)
+            const r = result?.results.find((x) => x.questionId === q.id)
             return (
               <QuestionCard
                 key={q.id}
@@ -136,7 +143,7 @@ function Practice({ passageId }: { passageId: number }) {
                 canSubmit ? 'bg-katta-accent text-white hover:bg-rose-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
             >
-              {submitting ? t('reading.submitting') : `${t('reading.submit_button')} (${answeredCount}/${total})`}
+              {submitting ? t('listening.submitting') : `${t('listening.submit_button')} (${answeredCount}/${total})`}
             </button>
           ) : (
             <div className="bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between sticky bottom-4">
@@ -145,10 +152,10 @@ function Practice({ passageId }: { passageId: number }) {
               </p>
               <button
                 type="button"
-                onClick={() => void nextArticle()}
+                onClick={() => void nextClip()}
                 className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition"
               >
-                {t('reading.next_article')}
+                {t('listening.next_article')}
               </button>
             </div>
           )}
