@@ -1,0 +1,345 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model cache {
+  key        String @id @db.VarChar(255)
+  value      String @db.MediumText
+  expiration Int
+
+  @@index([expiration], map: "cache_expiration_index")
+}
+
+model cache_locks {
+  key        String @id @db.VarChar(255)
+  owner      String @db.VarChar(255)
+  expiration Int
+
+  @@index([expiration], map: "cache_locks_expiration_index")
+}
+
+model failed_jobs {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String   @unique(map: "failed_jobs_uuid_unique") @db.VarChar(255)
+  connection String   @db.Text
+  queue      String   @db.Text
+  payload    String   @db.LongText
+  exception  String   @db.LongText
+  failed_at  DateTime @default(now()) @db.Timestamp(0)
+}
+
+model feedback {
+  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id         BigInt    @db.UnsignedBigInt
+  category        String    @db.VarChar(20)
+  title           String    @db.VarChar(255)
+  message         String    @db.Text
+  screenshot_path String?   @db.VarChar(255)
+  context_url     String?   @db.VarChar(255)
+  status          String    @default("pending") @db.VarChar(20)
+  created_at      DateTime? @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+  users           users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "feedback_user_id_foreign")
+
+  @@index([user_id], map: "feedback_user_id_index")
+}
+
+model grammar_question_sets {
+  id                   BigInt              @id @default(autoincrement()) @db.UnsignedBigInt
+  topic_key            String              @db.VarChar(40)
+  status               String              @default("available") @db.VarChar(20)
+  replenish_dispatched Boolean             @default(false)
+  user_id              BigInt?             @db.UnsignedBigInt
+  score                Int?                @db.UnsignedInt
+  total                Int?                @db.UnsignedInt
+  answers              String?             @db.LongText
+  started_at           DateTime?           @db.Timestamp(0)
+  completed_at         DateTime?           @db.Timestamp(0)
+  created_at           DateTime?           @db.Timestamp(0)
+  updated_at           DateTime?           @db.Timestamp(0)
+  users                users?              @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "grammar_question_sets_user_id_foreign")
+  grammar_questions    grammar_questions[]
+
+  @@index([topic_key, status], map: "grammar_question_sets_topic_key_status_index")
+  @@index([user_id], map: "grammar_question_sets_user_id_index")
+}
+
+model grammar_questions {
+  id                    BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  set_id                BigInt                @db.UnsignedBigInt
+  type                  String                @db.VarChar(10)
+  question              String                @db.Text
+  options               String?               @db.LongText
+  correct_answer        String                @db.LongText
+  order                 Int                   @default(0) @db.UnsignedInt
+  created_at            DateTime?             @db.Timestamp(0)
+  updated_at            DateTime?             @db.Timestamp(0)
+  grammar_question_sets grammar_question_sets @relation(fields: [set_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "grammar_questions_set_id_foreign")
+
+  @@index([set_id], map: "grammar_questions_set_id_foreign")
+}
+
+model grammar_topics {
+  id                   BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  parent_id            BigInt?          @db.UnsignedBigInt
+  title                String           @db.VarChar(255)
+  slug                 String           @unique(map: "grammar_topics_slug_unique") @db.VarChar(255)
+  content_vi           String?          @db.LongText
+  content_en           String?          @db.LongText
+  order                Int              @default(0) @db.UnsignedInt
+  created_at           DateTime?        @db.Timestamp(0)
+  updated_at           DateTime?        @db.Timestamp(0)
+  grammar_topics       grammar_topics?  @relation("grammar_topicsTogrammar_topics", fields: [parent_id], references: [id], onUpdate: Restrict, map: "grammar_topics_parent_id_foreign")
+  other_grammar_topics grammar_topics[] @relation("grammar_topicsTogrammar_topics")
+
+  @@index([parent_id], map: "grammar_topics_parent_id_index")
+}
+
+model job_batches {
+  id             String  @id @db.VarChar(255)
+  name           String  @db.VarChar(255)
+  total_jobs     Int
+  pending_jobs   Int
+  failed_jobs    Int
+  failed_job_ids String  @db.LongText
+  options        String? @db.MediumText
+  cancelled_at   Int?
+  created_at     Int
+  finished_at    Int?
+}
+
+model jobs {
+  id           BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  queue        String @db.VarChar(255)
+  payload      String @db.LongText
+  attempts     Int    @db.UnsignedTinyInt
+  reserved_at  Int?   @db.UnsignedInt
+  available_at Int    @db.UnsignedInt
+  created_at   Int    @db.UnsignedInt
+
+  @@index([queue], map: "jobs_queue_index")
+}
+
+model listening_passages {
+  id                    BigInt                  @id @default(autoincrement()) @db.UnsignedBigInt
+  topic                 String                  @db.VarChar(30)
+  title                 String                  @db.VarChar(255)
+  level                 String?                 @db.VarChar(2)
+  transcript            String                  @db.Text
+  created_at            DateTime?               @db.Timestamp(0)
+  updated_at            DateTime?               @db.Timestamp(0)
+  listening_questions   listening_questions[]
+  listening_submissions listening_submissions[]
+
+  @@index([topic], map: "listening_passages_topic_index")
+}
+
+model listening_questions {
+  id                 BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  passage_id         BigInt             @db.UnsignedBigInt
+  type               String             @db.VarChar(10)
+  question           String             @db.Text
+  options            String?            @db.LongText
+  correct_answer     String             @db.LongText
+  order              Int                @default(0) @db.UnsignedInt
+  created_at         DateTime?          @db.Timestamp(0)
+  updated_at         DateTime?          @db.Timestamp(0)
+  listening_passages listening_passages @relation(fields: [passage_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "listening_questions_passage_id_foreign")
+
+  @@index([passage_id], map: "listening_questions_passage_id_foreign")
+}
+
+model listening_submissions {
+  id                 BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id            BigInt             @db.UnsignedBigInt
+  passage_id         BigInt             @db.UnsignedBigInt
+  score              Int                @db.UnsignedTinyInt
+  total              Int                @db.UnsignedTinyInt
+  answers            String             @db.LongText
+  created_at         DateTime?          @db.Timestamp(0)
+  updated_at         DateTime?          @db.Timestamp(0)
+  listening_passages listening_passages @relation(fields: [passage_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "listening_submissions_passage_id_foreign")
+  users              users              @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "listening_submissions_user_id_foreign")
+
+  @@index([passage_id], map: "listening_submissions_passage_id_foreign")
+  @@index([user_id], map: "listening_submissions_user_id_index")
+}
+
+model migrations {
+  id        Int    @id @default(autoincrement()) @db.UnsignedInt
+  migration String @db.VarChar(255)
+  batch     Int
+}
+
+model password_reset_tokens {
+  email      String    @id @db.VarChar(255)
+  token      String    @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+}
+
+model reading_passages {
+  id                  BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  topic               String                @db.VarChar(30)
+  title               String                @db.VarChar(255)
+  level               String?               @db.VarChar(2)
+  content             String                @db.Text
+  created_at          DateTime?             @db.Timestamp(0)
+  updated_at          DateTime?             @db.Timestamp(0)
+  reading_questions   reading_questions[]
+  reading_submissions reading_submissions[]
+
+  @@index([topic], map: "reading_passages_topic_index")
+}
+
+model reading_questions {
+  id               BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  passage_id       BigInt           @db.UnsignedBigInt
+  type             String           @db.VarChar(10)
+  question         String           @db.Text
+  options          String?          @db.LongText
+  correct_answer   String           @db.Text
+  order            Int              @default(0) @db.UnsignedInt
+  created_at       DateTime?        @db.Timestamp(0)
+  updated_at       DateTime?        @db.Timestamp(0)
+  reading_passages reading_passages @relation(fields: [passage_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reading_questions_passage_id_foreign")
+
+  @@index([passage_id], map: "reading_questions_passage_id_foreign")
+}
+
+model reading_submissions {
+  id               BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id          BigInt           @db.UnsignedBigInt
+  passage_id       BigInt           @db.UnsignedBigInt
+  score            Int              @db.UnsignedTinyInt
+  total            Int              @db.UnsignedTinyInt
+  answers          String           @db.LongText
+  created_at       DateTime?        @db.Timestamp(0)
+  updated_at       DateTime?        @db.Timestamp(0)
+  reading_passages reading_passages @relation(fields: [passage_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reading_submissions_passage_id_foreign")
+  users            users            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reading_submissions_user_id_foreign")
+
+  @@index([passage_id], map: "reading_submissions_passage_id_foreign")
+  @@index([user_id], map: "reading_submissions_user_id_index")
+}
+
+model sessions {
+  id            String  @id @db.VarChar(255)
+  user_id       BigInt? @db.UnsignedBigInt
+  ip_address    String? @db.VarChar(45)
+  user_agent    String? @db.Text
+  payload       String  @db.LongText
+  last_activity Int
+
+  @@index([last_activity], map: "sessions_last_activity_index")
+  @@index([user_id], map: "sessions_user_id_index")
+}
+
+model study_sessions {
+  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id          BigInt    @db.UnsignedBigInt
+  type             String    @db.VarChar(30)
+  duration_seconds Int       @default(0) @db.UnsignedInt
+  completed_at     DateTime  @default(now()) @db.Timestamp(0)
+  created_at       DateTime? @db.Timestamp(0)
+  updated_at       DateTime? @db.Timestamp(0)
+  users            users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "study_sessions_user_id_foreign")
+
+  @@index([user_id, completed_at], map: "study_sessions_user_id_completed_at_index")
+}
+
+model translation_passages {
+  id                      BigInt                    @id @default(autoincrement()) @db.UnsignedBigInt
+  level                   String                    @db.VarChar(2)
+  direction               String                    @default("en_vi") @db.VarChar(10)
+  source_text             String                    @db.Text
+  created_at              DateTime?                 @db.Timestamp(0)
+  updated_at              DateTime?                 @db.Timestamp(0)
+  translation_submissions translation_submissions[]
+
+  @@index([level, direction], map: "translation_passages_level_direction_index")
+}
+
+model translation_submissions {
+  id                   BigInt               @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id              BigInt               @db.UnsignedBigInt
+  passage_id           BigInt               @db.UnsignedBigInt
+  user_translation     String               @db.Text
+  ai_score             Int?                 @db.UnsignedTinyInt
+  ai_feedback          String?              @db.Text
+  created_at           DateTime?            @db.Timestamp(0)
+  updated_at           DateTime?            @db.Timestamp(0)
+  translation_passages translation_passages @relation(fields: [passage_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "translation_submissions_passage_id_foreign")
+  users                users                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "translation_submissions_user_id_foreign")
+
+  @@index([passage_id], map: "translation_submissions_passage_id_foreign")
+  @@index([user_id], map: "translation_submissions_user_id_index")
+}
+
+model user_vocab_progress {
+  id               BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id          BigInt       @db.UnsignedBigInt
+  vocabulary_id    BigInt       @db.UnsignedBigInt
+  is_mastered      Boolean      @default(false)
+  last_reviewed_at DateTime?    @db.Timestamp(0)
+  created_at       DateTime?    @db.Timestamp(0)
+  updated_at       DateTime?    @db.Timestamp(0)
+  users            users        @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "user_vocab_progress_user_id_foreign")
+  vocabularies     vocabularies @relation(fields: [vocabulary_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "user_vocab_progress_vocabulary_id_foreign")
+
+  @@unique([user_id, vocabulary_id], map: "user_vocab_progress_user_id_vocabulary_id_unique")
+  @@index([vocabulary_id], map: "user_vocab_progress_vocabulary_id_foreign")
+}
+
+model users {
+  id                      BigInt                    @id @default(autoincrement()) @db.UnsignedBigInt
+  name                    String                    @db.VarChar(255)
+  email                   String                    @unique(map: "users_email_unique") @db.VarChar(255)
+  email_verified_at       DateTime?                 @db.Timestamp(0)
+  password                String                    @db.VarChar(255)
+  remember_token          String?                   @db.VarChar(100)
+  gemini_api_key          String?                   @db.Text
+  locale                  String?                   @db.VarChar(5)
+  created_at              DateTime?                 @db.Timestamp(0)
+  updated_at              DateTime?                 @db.Timestamp(0)
+  feedback                feedback[]
+  grammar_question_sets   grammar_question_sets[]
+  listening_submissions   listening_submissions[]
+  reading_submissions     reading_submissions[]
+  study_sessions          study_sessions[]
+  translation_submissions translation_submissions[]
+  user_vocab_progress     user_vocab_progress[]
+  vocabulary_submissions  vocabulary_submissions[]
+}
+
+model vocabularies {
+  id                  BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  level               String                @db.VarChar(2)
+  word                String                @db.VarChar(255)
+  part_of_speech      String?               @db.VarChar(20)
+  ipa                 String?               @db.VarChar(255)
+  meaning_vi          String?               @db.VarChar(255)
+  created_at          DateTime?             @db.Timestamp(0)
+  updated_at          DateTime?             @db.Timestamp(0)
+  user_vocab_progress user_vocab_progress[]
+
+  @@index([level], map: "vocabularies_level_index")
+}
+
+model vocabulary_submissions {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt    @db.UnsignedBigInt
+  level      String    @db.VarChar(2)
+  score      Int       @db.UnsignedInt
+  total      Int       @db.UnsignedInt
+  results    String    @db.LongText
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "vocabulary_submissions_user_id_foreign")
+
+  @@index([user_id], map: "vocabulary_submissions_user_id_index")
+}

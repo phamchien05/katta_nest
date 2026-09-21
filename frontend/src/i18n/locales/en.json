@@ -1,0 +1,45 @@
+{
+  "nav": {
+    "home": "Home",
+    "vocabulary": "Vocabulary",
+    "translate": "Translate",
+    "reading": "Reading",
+    "grammar": "Grammar",
+    "idioms": "Idioms",
+    "listening": "Listening",
+    "speaking": "Speaking",
+    "ai_chat": "AI Chat",
+    "progress": "My Progress",
+    "statistics": "Statistics",
+    "feedback": "Feedback",
+    "settings": "Settings",
+    "logout": "Logout",
+    "profile": "Profile",
+    "notifications": "Notifications"
+  },
+  "header": {
+    "no_notifications": "No notifications yet.",
+    "open_menu": "Open menu"
+  },
+  "auth": {
+    "tagline": "Learn English every day with Katta",
+    "login_title": "Log in",
+    "register_title": "Create your account",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "password_hint": "At least 8 characters",
+    "login_button": "Log in",
+    "register_button": "Register",
+    "working": "Please wait...",
+    "no_account": "Don't have an account?",
+    "have_account": "Already registered?",
+    "checking_session": "Loading..."
+  },
+  "placeholder": {
+    "coming_soon": "This module is being migrated and will be available in the next step."
+  },
+  "home": {
+    "welcome": "Welcome back, {{name}}!"
+  }
+}

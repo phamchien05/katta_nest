@@ -1,0 +1,45 @@
+{
+  "nav": {
+    "home": "Trang chủ",
+    "vocabulary": "Từ vựng",
+    "translate": "Dịch",
+    "reading": "Đọc",
+    "grammar": "Ngữ pháp",
+    "idioms": "Thành ngữ",
+    "listening": "Nghe",
+    "speaking": "Nói",
+    "ai_chat": "Trò chuyện AI",
+    "progress": "Tiến trình của tôi",
+    "statistics": "Thống kê",
+    "feedback": "Nhận xét",
+    "settings": "Cài đặt",
+    "logout": "Đăng xuất",
+    "profile": "Hồ sơ",
+    "notifications": "Thông báo"
+  },
+  "header": {
+    "no_notifications": "Chưa có thông báo nào.",
+    "open_menu": "Mở menu"
+  },
+  "auth": {
+    "tagline": "Học tiếng Anh mỗi ngày cùng Katta",
+    "login_title": "Đăng nhập",
+    "register_title": "Tạo tài khoản",
+    "name": "Tên",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "password_hint": "Tối thiểu 8 ký tự",
+    "login_button": "Đăng nhập",
+    "register_button": "Đăng ký",
+    "working": "Vui lòng chờ...",
+    "no_account": "Chưa có tài khoản?",
+    "have_account": "Đã có tài khoản?",
+    "checking_session": "Đang tải..."
+  },
+  "placeholder": {
+    "coming_soon": "Module này đang được chuyển sang hệ thống mới, sẽ có ở bước tiếp theo."
+  },
+  "home": {
+    "welcome": "Chào mừng trở lại, {{name}}!"
+  }
+}
