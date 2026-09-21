@@ -1,9 +1,10 @@
 # Katta (NestJS + React)
 
-Ứng dụng học tiếng Anh cho người Việt, chuyển từ Laravel sang **Node.js + NestJS + React**.
+Ứng dụng học tiếng Anh cho người Việt, viết bằng **Node.js + NestJS + React** (chuyển từ bản Laravel cũ).
 
-- `backend/`  - NestJS 11 + Prisma 6 + MySQL (dùng chung database `katta` với bản Laravel cũ, không cần chuyển dữ liệu)
+- `backend/`  - NestJS 11 + Prisma 6 + MySQL
 - `frontend/` - React 19 + Vite + TypeScript + Tailwind CSS 4 + i18next (tiếng Anh mặc định, chuyển được sang tiếng Việt)
+- `database/katta.sql` - cấu trúc database + dữ liệu nội dung (từ vựng, ngữ pháp, bài đọc/nghe/dịch). Không chứa tài khoản hay lịch sử của ai.
 
 ## Các module
 
@@ -22,38 +23,70 @@
 
 Dịch, Đọc hiểu, Ngữ pháp, Nghe dùng **kho tự bù**: mỗi lần người dùng lấy một bài ra làm, server nhờ Gemini sinh ngầm một bài mới bù vào kho.
 
-Chưa làm (chưa có ở bản Laravel): Thành ngữ, Trò chuyện AI, Nói, trang quản trị. Các mục này hiện là trang giữ chỗ.
+Chưa làm: Thành ngữ, Trò chuyện AI, Nói, trang quản trị (hiện là trang giữ chỗ).
 
-## Chạy thử
+## Chạy dự án
 
-Cần Node 22+ và MySQL đang chạy với database `katta`.
+Cần: **Node 22+**, **MySQL/MariaDB** (XAMPP dùng được). Ba bước, làm một lần đầu:
+
+### 1) Tạo database
+
+Bật MySQL (XAMPP Control Panel → Start ở dòng MySQL), rồi nạp file SQL:
 
 ```bash
-# 1) Backend (cổng 3000)
-cd backend
-cp .env.example .env      # rồi điền các biến bên dưới
-npm install
-npx prisma generate
-npm run start:dev
-
-# 2) Frontend (cổng 5173) - mở http://localhost:5173
-cd frontend
-npm install
-npm run dev
+# Windows + XAMPP (đổi đường dẫn nếu XAMPP của bạn ở chỗ khác)
+D:\xampp\mysql\bin\mysql.exe -u root < database\katta.sql
 ```
 
-### Biến môi trường (`backend/.env`)
+Lệnh này tự tạo database `katta` cùng toàn bộ bảng và dữ liệu nội dung. Nếu MySQL của bạn có mật khẩu, thêm `-p`.
+Chạy lại lần 2 sẽ báo lỗi "table already exists" - đó là chủ ý, để không xoá nhầm dữ liệu đang có.
+
+### 2) Cấu hình và cài backend
+
+```bash
+cd backend
+copy .env.example .env         # macOS/Linux: cp .env.example .env
+```
+
+Mở `backend/.env` và điền:
 
 | Biến | Ý nghĩa |
 |---|---|
-| `DATABASE_URL` | Chuỗi kết nối MySQL |
-| `JWT_SECRET` | Chuỗi bí mật ký cookie đăng nhập (dài, ngẫu nhiên) |
-| `APP_KEY` | Khoá mã hoá API key riêng của người dùng, dạng `base64:...` (32 byte). Dùng **cùng giá trị với `.env` của bản Laravel** thì đọc được các key đã lưu |
-| `GEMINI_API_KEY` | Key Gemini dùng chung cho người chưa nhập key riêng |
-| `APP_TIMEZONE` | Múi giờ tính "ngày học" (streak, lịch). Mặc định `Asia/Ho_Chi_Minh` |
-| `UPLOAD_DIR` | Thư mục lưu ảnh phản hồi. Mặc định `./uploads` (đã được gitignore) |
+| `DATABASE_URL` | Chuỗi kết nối MySQL. XAMPP mặc định: `mysql://root@127.0.0.1:3306/katta` |
+| `JWT_SECRET` | Chuỗi bí mật ký cookie đăng nhập - đặt dài và ngẫu nhiên |
+| `APP_KEY` | Khoá mã hoá API key riêng của người dùng, dạng `base64:...` (32 byte). Tạo bằng lệnh bên dưới |
+| `GEMINI_API_KEY` | (Tuỳ chọn) key Gemini dùng chung. Không có thì Dịch chấm tạm theo độ dài và các kho bài không tự bù thêm. Lấy miễn phí ở Google AI Studio |
+| `APP_TIMEZONE` | Múi giờ tính "ngày học". Mặc định `Asia/Ho_Chi_Minh` |
+| `UPLOAD_DIR` | Thư mục lưu ảnh phản hồi. Mặc định `./uploads` |
 
-Không đưa `.env` lên git.
+Tạo `JWT_SECRET` và `APP_KEY` ngẫu nhiên:
+
+```bash
+node -e "console.log('JWT_SECRET=' + require('crypto').randomBytes(48).toString('hex'))"
+node -e "console.log('APP_KEY=base64:' + require('crypto').randomBytes(32).toString('base64'))"
+```
+
+Rồi cài và chạy:
+
+```bash
+npm install
+npx prisma generate
+npm run start:dev              # backend chạy ở http://localhost:3000
+```
+
+### 3) Chạy frontend (cửa sổ terminal thứ hai)
+
+```bash
+cd frontend
+npm install
+npm run dev                    # mở http://localhost:5173
+```
+
+Vào `http://localhost:5173`, bấm **Register** tạo tài khoản rồi dùng. Frontend tự chuyển các lời gọi `/api` sang backend nên không cần cấu hình thêm.
+
+### Những lần sau
+
+Chỉ cần bật MySQL, rồi chạy `npm run start:dev` trong `backend/` và `npm run dev` trong `frontend/`.
 
 ## Kiểm tra
 
@@ -62,3 +95,11 @@ bash scripts/verify.sh   # lint + typecheck + toàn bộ test + build, dừng ng
 ```
 
 Test backend dùng DB giả trong bộ nhớ nên không bao giờ đụng tới MySQL thật.
+
+## Xử lý sự cố
+
+- **Đăng ký/đăng nhập báo lỗi kết nối, hoặc backend không khởi động**: MySQL chưa bật, hoặc `DATABASE_URL` sai (kiểm tra tên database là `katta`).
+- **Trang trắng / lỗi mạng ở frontend**: backend chưa chạy ở cổng 3000.
+- **Cổng bị chiếm**: đổi `PORT` trong `backend/.env` (và `target` của proxy trong `frontend/vite.config.ts` nếu đổi cổng backend).
+- **Bài đọc/nghe không thấy bài mới được sinh thêm**: chưa có `GEMINI_API_KEY` (hoặc key riêng trong Cài đặt), hoặc đã hết hạn mức miễn phí trong ngày.
+- **Không lưu được API key riêng (lỗi 503)**: `APP_KEY` trong `.env` bị thiếu hoặc không phải chuỗi `base64:` 32 byte.

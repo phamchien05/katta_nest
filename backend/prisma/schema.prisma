@@ -7,32 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model cache {
-  key        String @id @db.VarChar(255)
-  value      String @db.MediumText
-  expiration Int
-
-  @@index([expiration], map: "cache_expiration_index")
-}
-
-model cache_locks {
-  key        String @id @db.VarChar(255)
-  owner      String @db.VarChar(255)
-  expiration Int
-
-  @@index([expiration], map: "cache_locks_expiration_index")
-}
-
-model failed_jobs {
-  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
-  uuid       String   @unique(map: "failed_jobs_uuid_unique") @db.VarChar(255)
-  connection String   @db.Text
-  queue      String   @db.Text
-  payload    String   @db.LongText
-  exception  String   @db.LongText
-  failed_at  DateTime @default(now()) @db.Timestamp(0)
-}
-
 model feedback {
   id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
   user_id         BigInt    @db.UnsignedBigInt
@@ -100,31 +74,6 @@ model grammar_topics {
   @@index([parent_id], map: "grammar_topics_parent_id_index")
 }
 
-model job_batches {
-  id             String  @id @db.VarChar(255)
-  name           String  @db.VarChar(255)
-  total_jobs     Int
-  pending_jobs   Int
-  failed_jobs    Int
-  failed_job_ids String  @db.LongText
-  options        String? @db.MediumText
-  cancelled_at   Int?
-  created_at     Int
-  finished_at    Int?
-}
-
-model jobs {
-  id           BigInt @id @default(autoincrement()) @db.UnsignedBigInt
-  queue        String @db.VarChar(255)
-  payload      String @db.LongText
-  attempts     Int    @db.UnsignedTinyInt
-  reserved_at  Int?   @db.UnsignedInt
-  available_at Int    @db.UnsignedInt
-  created_at   Int    @db.UnsignedInt
-
-  @@index([queue], map: "jobs_queue_index")
-}
-
 model listening_passages {
   id                    BigInt                  @id @default(autoincrement()) @db.UnsignedBigInt
   topic                 String                  @db.VarChar(30)
@@ -170,18 +119,6 @@ model listening_submissions {
   @@index([user_id], map: "listening_submissions_user_id_index")
 }
 
-model migrations {
-  id        Int    @id @default(autoincrement()) @db.UnsignedInt
-  migration String @db.VarChar(255)
-  batch     Int
-}
-
-model password_reset_tokens {
-  email      String    @id @db.VarChar(255)
-  token      String    @db.VarChar(255)
-  created_at DateTime? @db.Timestamp(0)
-}
-
 model reading_passages {
   id                  BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
   topic               String                @db.VarChar(30)
@@ -225,18 +162,6 @@ model reading_submissions {
 
   @@index([passage_id], map: "reading_submissions_passage_id_foreign")
   @@index([user_id], map: "reading_submissions_user_id_index")
-}
-
-model sessions {
-  id            String  @id @db.VarChar(255)
-  user_id       BigInt? @db.UnsignedBigInt
-  ip_address    String? @db.VarChar(45)
-  user_agent    String? @db.Text
-  payload       String  @db.LongText
-  last_activity Int
-
-  @@index([last_activity], map: "sessions_last_activity_index")
-  @@index([user_id], map: "sessions_user_id_index")
 }
 
 model study_sessions {
