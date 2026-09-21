@@ -6,11 +6,13 @@ import { NAV_ITEMS } from './config/nav'
 import { AuthForm } from './pages/AuthForm'
 import { Home } from './pages/Home'
 import { Placeholder } from './pages/Placeholder'
+import { TranslateHome } from './pages/translate/TranslateHome'
+import { TranslatePractice } from './pages/translate/TranslatePractice'
 import { VocabularyLevels } from './pages/vocabulary/VocabularyLevels'
 import { VocabularyQuiz } from './pages/vocabulary/VocabularyQuiz'
 
 // Các module đã chuyển xong (có trang thật) - phần còn lại vẫn là trang giữ chỗ
-const MIGRATED_PATHS = new Set(['/', '/vocabulary'])
+const MIGRATED_PATHS = new Set(['/', '/vocabulary', '/translate'])
 
 export default function App() {
   return (
@@ -27,6 +29,8 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/vocabulary" element={<VocabularyLevels />} />
           <Route path="/vocabulary/:level" element={<VocabularyQuiz />} />
+          <Route path="/translate" element={<TranslateHome />} />
+          <Route path="/translate/:level" element={<TranslatePractice />} />
           {/* Các module còn lại: giữ chỗ cho tới khi được chuyển từng cái sang hệ thống mới */}
           {NAV_ITEMS.filter((item) => !MIGRATED_PATHS.has(item.path)).map((item) => (
             <Route key={item.path} path={`${item.path}/*`} element={<Placeholder />} />

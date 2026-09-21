@@ -95,5 +95,31 @@
     "no_words": "Chưa có từ vựng nào ở cấp độ {{level}}.",
     "load_failed": "Không tải được bài kiểm tra. Vui lòng thử lại.",
     "submit_failed": "Không nộp được bài. Vui lòng thử lại."
+  },
+  "translate": {
+    "select_level_title": "Chọn cấp độ dịch",
+    "select_level_subtitle": "Chọn một cấp độ để bắt đầu luyện dịch.",
+    "mode_label": "CHẾ ĐỘ",
+    "level_subtitle": "Dịch {{level}}",
+    "back_to_levels": "← Quay lại chọn cấp độ",
+    "source_text": "Văn bản gốc",
+    "your_translation": "Bản dịch của bạn",
+    "input_placeholder": "Nhập bản dịch của bạn vào đây...",
+    "submit_for_grading": "Nộp bài chấm điểm",
+    "grading": "Đang chấm...",
+    "result_title": "Kết quả chấm điểm",
+    "reference_translation_label": "Bản dịch mẫu",
+    "issues_label": "Những điểm cần sửa",
+    "simple_grade_notice": "Chưa cấu hình Gemini API key nên đây chỉ là điểm ước lượng theo độ dài. Hãy thêm key trong Cài đặt để được AI chấm chính xác.",
+    "try_again": "Thử đoạn khác",
+    "tab_levels": "Chọn cấp độ",
+    "tab_history": "Đã dịch",
+    "history_empty": "Bạn chưa dịch đoạn văn nào.",
+    "retry": "Dịch lại",
+    "loading": "Đang tải...",
+    "no_passages": "Chưa có đoạn văn nào cho cấp độ này.",
+    "unknown_level": "Cấp độ này không tồn tại.",
+    "load_failed": "Không tải được đoạn văn. Vui lòng thử lại.",
+    "grade_failed": "Không chấm được bài dịch. Vui lòng thử lại."
   }
 }

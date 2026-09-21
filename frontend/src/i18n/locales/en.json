@@ -95,5 +95,31 @@
     "no_words": "There are no {{level}} words yet.",
     "load_failed": "Could not load the test. Please try again.",
     "submit_failed": "Could not submit your test. Please try again."
+  },
+  "translate": {
+    "select_level_title": "Select Translation Level",
+    "select_level_subtitle": "Choose a level to start practicing translation.",
+    "mode_label": "MODE",
+    "level_subtitle": "{{level}} Translation",
+    "back_to_levels": "← Back to Level Selection",
+    "source_text": "Source Text",
+    "your_translation": "Your Translation",
+    "input_placeholder": "Type your translation here...",
+    "submit_for_grading": "Submit for Grading",
+    "grading": "Grading...",
+    "result_title": "Grading Result",
+    "reference_translation_label": "Reference translation",
+    "issues_label": "Things to fix",
+    "simple_grade_notice": "Gemini API key is not configured, so this is a simple length-based estimate. Add your key in Settings for accurate AI grading.",
+    "try_again": "Try another passage",
+    "tab_levels": "Select Level",
+    "tab_history": "Translated",
+    "history_empty": "You haven't translated any passage yet.",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "no_passages": "There are no passages for this level yet.",
+    "unknown_level": "This level does not exist.",
+    "load_failed": "Could not load the passage. Please try again.",
+    "grade_failed": "Could not grade your translation. Please try again."
   }
 }
