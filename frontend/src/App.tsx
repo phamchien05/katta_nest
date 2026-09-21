@@ -6,6 +6,11 @@ import { NAV_ITEMS } from './config/nav'
 import { AuthForm } from './pages/AuthForm'
 import { Home } from './pages/Home'
 import { Placeholder } from './pages/Placeholder'
+import { VocabularyLevels } from './pages/vocabulary/VocabularyLevels'
+import { VocabularyQuiz } from './pages/vocabulary/VocabularyQuiz'
+
+// Các module đã chuyển xong (có trang thật) - phần còn lại vẫn là trang giữ chỗ
+const MIGRATED_PATHS = new Set(['/', '/vocabulary'])
 
 export default function App() {
   return (
@@ -20,8 +25,10 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/vocabulary" element={<VocabularyLevels />} />
+          <Route path="/vocabulary/:level" element={<VocabularyQuiz />} />
           {/* Các module còn lại: giữ chỗ cho tới khi được chuyển từng cái sang hệ thống mới */}
-          {NAV_ITEMS.filter((item) => item.path !== '/').map((item) => (
+          {NAV_ITEMS.filter((item) => !MIGRATED_PATHS.has(item.path)).map((item) => (
             <Route key={item.path} path={`${item.path}/*`} element={<Placeholder />} />
           ))}
         </Route>

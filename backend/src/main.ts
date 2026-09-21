@@ -4,7 +4,9 @@ import { configureApp } from './app.setup';
 
 // Các cột id trong DB (Laravel) là BIGINT UNSIGNED -> Prisma trả về BigInt, mà JSON.stringify không
 // serialize được BigInt. id của app này nhỏ hơn 2^53 nên chuyển thẳng sang number là an toàn.
-(BigInt.prototype as unknown as { toJSON: () => number }).toJSON = function (this: bigint) {
+(BigInt.prototype as unknown as { toJSON: () => number }).toJSON = function (
+  this: bigint,
+) {
   return Number(this);
 };
 

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, HttpCode, Post, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import type { users } from '@prisma/client';
 import { AuthService } from './auth.service';
@@ -15,7 +23,10 @@ export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   @Post('register')
-  async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
+  async register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { user, token } = await this.auth.register(dto);
     this.setCookie(res, token);
     return toPublicUser(user);
@@ -23,7 +34,10 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { user, token } = await this.auth.login(dto);
     this.setCookie(res, token);
     return toPublicUser(user);

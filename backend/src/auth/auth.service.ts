@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
@@ -37,7 +41,9 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.users.findUnique({ where: { email: dto.email.toLowerCase() } });
+    const user = await this.prisma.users.findUnique({
+      where: { email: dto.email.toLowerCase() },
+    });
     // Cùng 1 thông báo cho "sai email" và "sai mật khẩu" để không lộ email nào đã đăng ký
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
       throw new UnauthorizedException('Email hoặc mật khẩu không đúng.');
