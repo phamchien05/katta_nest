@@ -121,5 +121,41 @@
     "unknown_level": "Cấp độ này không tồn tại.",
     "load_failed": "Không tải được đoạn văn. Vui lòng thử lại.",
     "grade_failed": "Không chấm được bài dịch. Vui lòng thử lại."
+  },
+  "reading": {
+    "subtitle": "Chọn 1 bài để luyện đọc hiểu kiểu IELTS.",
+    "search_placeholder": "Tìm bài đọc...",
+    "tab_all": "Tất cả",
+    "tab_history": "Đã đọc",
+    "start_reading": "→ Bắt đầu đọc",
+    "back_to_passages": "← Quay lại danh sách",
+    "answered_count": "{{answered}}/{{total}} đã trả lời",
+    "submit_button": "Trả lời tất cả câu hỏi",
+    "submitting": "Đang nộp bài...",
+    "next_article": "Bài tiếp theo →",
+    "history_empty": "Bạn chưa đọc bài nào.",
+    "retry": "Làm lại",
+    "no_results": "Không tìm thấy bài đọc phù hợp.",
+    "loading": "Đang tải...",
+    "load_failed": "Không tải được bài đọc. Vui lòng thử lại.",
+    "submit_failed": "Không nộp được bài. Vui lòng thử lại.",
+    "topics": {
+      "business": "Việc kinh doanh",
+      "environment": "Môi trường",
+      "general": "Tổng quan",
+      "health": "Sức khỏe",
+      "history": "Lịch sử",
+      "science": "Khoa học",
+      "society": "Xã hội",
+      "technology": "Công nghệ"
+    }
+  },
+  "quiz": {
+    "fill_placeholder": "Nhập câu trả lời...",
+    "true": "Đúng (True)",
+    "false": "Sai (False)",
+    "correct": "Đúng",
+    "incorrect": "Sai",
+    "correct_answer_label": "Đáp án đúng:"
   }
 }

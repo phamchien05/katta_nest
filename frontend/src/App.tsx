@@ -6,13 +6,15 @@ import { NAV_ITEMS } from './config/nav'
 import { AuthForm } from './pages/AuthForm'
 import { Home } from './pages/Home'
 import { Placeholder } from './pages/Placeholder'
+import { ReadingHome } from './pages/reading/ReadingHome'
+import { ReadingGeneralRedirect, ReadingPractice } from './pages/reading/ReadingPractice'
 import { TranslateHome } from './pages/translate/TranslateHome'
 import { TranslatePractice } from './pages/translate/TranslatePractice'
 import { VocabularyLevels } from './pages/vocabulary/VocabularyLevels'
 import { VocabularyQuiz } from './pages/vocabulary/VocabularyQuiz'
 
 // Các module đã chuyển xong (có trang thật) - phần còn lại vẫn là trang giữ chỗ
-const MIGRATED_PATHS = new Set(['/', '/vocabulary', '/translate'])
+const MIGRATED_PATHS = new Set(['/', '/vocabulary', '/translate', '/reading'])
 
 export default function App() {
   return (
@@ -31,6 +33,9 @@ export default function App() {
           <Route path="/vocabulary/:level" element={<VocabularyQuiz />} />
           <Route path="/translate" element={<TranslateHome />} />
           <Route path="/translate/:level" element={<TranslatePractice />} />
+          <Route path="/reading" element={<ReadingHome />} />
+          <Route path="/reading/general/:level" element={<ReadingGeneralRedirect />} />
+          <Route path="/reading/:id" element={<ReadingPractice />} />
           {/* Các module còn lại: giữ chỗ cho tới khi được chuyển từng cái sang hệ thống mới */}
           {NAV_ITEMS.filter((item) => !MIGRATED_PATHS.has(item.path)).map((item) => (
             <Route key={item.path} path={`${item.path}/*`} element={<Placeholder />} />

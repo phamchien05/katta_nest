@@ -121,5 +121,41 @@
     "unknown_level": "This level does not exist.",
     "load_failed": "Could not load the passage. Please try again.",
     "grade_failed": "Could not grade your translation. Please try again."
+  },
+  "reading": {
+    "subtitle": "Choose a passage to practise IELTS-style reading comprehension.",
+    "search_placeholder": "Search passages...",
+    "tab_all": "All",
+    "tab_history": "Read",
+    "start_reading": "→ Start reading",
+    "back_to_passages": "← Back to passages",
+    "answered_count": "{{answered}}/{{total}} answered",
+    "submit_button": "Answer all questions",
+    "submitting": "Submitting...",
+    "next_article": "Next article →",
+    "history_empty": "You haven't read any passage yet.",
+    "retry": "Retry",
+    "no_results": "No matching passages found.",
+    "loading": "Loading...",
+    "load_failed": "Could not load the passage. Please try again.",
+    "submit_failed": "Could not submit your answers. Please try again.",
+    "topics": {
+      "business": "Business",
+      "environment": "Environment",
+      "general": "General",
+      "health": "Health",
+      "history": "History",
+      "science": "Science",
+      "society": "Society",
+      "technology": "Technology"
+    }
+  },
+  "quiz": {
+    "fill_placeholder": "Type your answer...",
+    "true": "True",
+    "false": "False",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "correct_answer_label": "Correct answer:"
   }
 }

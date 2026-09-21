@@ -5,6 +5,7 @@ import { GeminiModule } from './gemini/gemini.module';
 import { HealthController } from './health/health.controller';
 import { HomeModule } from './home/home.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ReadingModule } from './reading/reading.module';
 import { TranslateModule } from './translate/translate.module';
 import { VocabularyModule } from './vocabulary/vocabulary.module';
 
@@ -17,6 +18,7 @@ import { VocabularyModule } from './vocabulary/vocabulary.module';
     VocabularyModule,
     HomeModule,
     TranslateModule,
+    ReadingModule,
   ],
   controllers: [HealthController],
 })
