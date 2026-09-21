@@ -140,6 +140,41 @@ export class FakeTable<T extends Row> {
     return Promise.resolve({ ...row });
   };
 
+  // Giống Prisma aggregate: _count._all, _sum/_avg theo danh sách cột (null nếu không có dòng nào)
+  aggregate = (args: {
+    where?: Row;
+    _sum?: Record<string, boolean>;
+    _avg?: Record<string, boolean>;
+    _count?: { _all?: boolean };
+  }) => {
+    const rows = this.filter({ where: args.where });
+    const values = (field: string) =>
+      rows
+        .map((r) => r[field])
+        .filter((v): v is number => typeof v === 'number');
+    const out: Record<string, unknown> = {};
+    if (args._count) out._count = { _all: rows.length };
+    if (args._sum) {
+      out._sum = Object.fromEntries(
+        Object.keys(args._sum).map((f) => [
+          f,
+          values(f).length ? values(f).reduce((a, b) => a + b, 0) : null,
+        ]),
+      );
+    }
+    if (args._avg) {
+      out._avg = Object.fromEntries(
+        Object.keys(args._avg).map((f) => [
+          f,
+          values(f).length
+            ? values(f).reduce((a, b) => a + b, 0) / values(f).length
+            : null,
+        ]),
+      );
+    }
+    return Promise.resolve(out);
+  };
+
   createMany = ({ data }: { data: Row[] }) => {
     data.forEach((d) => void this.create({ data: d }));
     return Promise.resolve({ count: data.length });

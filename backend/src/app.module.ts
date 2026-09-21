@@ -7,7 +7,9 @@ import { HealthController } from './health/health.controller';
 import { HomeModule } from './home/home.module';
 import { ListeningModule } from './listening/listening.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ProgressModule } from './progress/progress.module';
 import { ReadingModule } from './reading/reading.module';
+import { StatisticsModule } from './statistics/statistics.module';
 import { TranslateModule } from './translate/translate.module';
 import { VocabularyModule } from './vocabulary/vocabulary.module';
 
@@ -23,6 +25,8 @@ import { VocabularyModule } from './vocabulary/vocabulary.module';
     ReadingModule,
     GrammarModule,
     ListeningModule,
+    ProgressModule,
+    StatisticsModule,
   ],
   controllers: [HealthController],
 })

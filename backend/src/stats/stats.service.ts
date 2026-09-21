@@ -62,4 +62,32 @@ export class StatsService {
         .map((s) => ({ type: s.type, completedAt: s.completed_at })),
     };
   }
+
+  // Các ngày (1-31) trong tháng có ít nhất 1 buổi học, tính theo múi giờ của người học
+  async activeDaysInMonth(
+    userId: bigint,
+    year: number,
+    month: number,
+  ): Promise<number[]> {
+    // Lấy dư 1 ngày mỗi đầu (múi giờ lệch tối đa ~14 giờ) rồi lọc lại theo ngày địa phương cho chính xác
+    const from = new Date(Date.UTC(year, month - 1, 1) - 24 * 3600 * 1000);
+    const to = new Date(Date.UTC(year, month, 1) + 24 * 3600 * 1000);
+    const sessions = await this.prisma.study_sessions.findMany({
+      where: { user_id: userId, completed_at: { gte: from, lt: to } },
+      select: { completed_at: true },
+    });
+
+    const prefix = `${year}-${String(month).padStart(2, '0')}-`;
+    const days = new Set<number>();
+    for (const s of sessions) {
+      const key = dayKey(s.completed_at, this.timeZone);
+      if (key.startsWith(prefix)) days.add(Number(key.slice(prefix.length)));
+    }
+    return [...days].sort((a, b) => a - b);
+  }
+
+  // "Hôm nay" theo múi giờ của người học - để frontend đánh dấu đúng ngày trên lịch
+  today(now = new Date()): string {
+    return dayKey(now, this.timeZone);
+  }
 }
