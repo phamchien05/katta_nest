@@ -100,6 +100,6 @@ Test backend dùng DB giả trong bộ nhớ nên không bao giờ đụng tới
 
 - **Đăng ký/đăng nhập báo lỗi kết nối, hoặc backend không khởi động**: MySQL chưa bật, hoặc `DATABASE_URL` sai (kiểm tra tên database là `katta`).
 - **Trang trắng / lỗi mạng ở frontend**: backend chưa chạy ở cổng 3000.
-- **Cổng bị chiếm**: đổi `PORT` trong `backend/.env` (và `target` của proxy trong `frontend/vite.config.ts` nếu đổi cổng backend).
+- **Cổng bị chiếm**: đổi `PORT` trong `backend/.env`, và đổi địa chỉ `http://localhost:3000` trong `frontend/vite.config.ts` cho khớp.
 - **Bài đọc/nghe không thấy bài mới được sinh thêm**: chưa có `GEMINI_API_KEY` (hoặc key riêng trong Cài đặt), hoặc đã hết hạn mức miễn phí trong ngày.
 - **Không lưu được API key riêng (lỗi 503)**: `APP_KEY` trong `.env` bị thiếu hoặc không phải chuỗi `base64:` 32 byte.
