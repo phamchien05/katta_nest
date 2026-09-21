@@ -156,6 +156,54 @@
     "false": "False",
     "correct": "Correct",
     "incorrect": "Incorrect",
-    "correct_answer_label": "Correct answer:"
+    "correct_answer_label": "Correct answer:",
+    "select_all": "(Select all that apply)"
+  },
+  "grammar": {
+    "index_subtitle": "Learn grammar rules or test your knowledge with exercises.",
+    "back_to_home": "← Back to Home",
+    "back_to_grammar": "← Back to Grammar",
+    "card_theory_title": "View Theory",
+    "card_theory_desc": "Explore a comprehensive library of grammar topics, organized from basic to advanced.",
+    "card_practice_title": "Start Practice",
+    "card_practice_desc": "Pick a topic and solve exercises to sharpen your skills.",
+    "empty_content": "Select a topic on the left to get started.",
+    "loading": "Loading...",
+    "load_failed": "Could not load this page. Please try again.",
+    "practice_select_title": "Choose a Practice Topic",
+    "practice_select_subtitle": "Pick a grammar point to start your test.",
+    "practice_tab_topics": "Topics",
+    "practice_tab_history": "Completed Sets",
+    "practice_history_empty": "You haven't completed any question sets yet.",
+    "practice_review": "Review",
+    "preparing": "Preparing your question set...",
+    "start_failed": "Could not start the practice set. Please try again.",
+    "practice_topics": {
+      "parts-of-speech": {
+        "title": "Parts of Speech",
+        "desc": "Learn the basic building blocks of a sentence like nouns, verbs, adjectives..."
+      },
+      "tenses": {
+        "title": "Tenses",
+        "desc": "Master how to use present, past, and future tenses..."
+      },
+      "sentence-structures": {
+        "title": "Sentence Structures",
+        "desc": "Learn how to build complete and coherent sentences..."
+      },
+      "question-forms": {
+        "title": "Question Forms",
+        "desc": "Discover how to ask for information using different question types..."
+      },
+      "common-structures": {
+        "title": "Common Structures",
+        "desc": "Master common English sentence patterns used in everyday communication..."
+      }
+    },
+    "quiz_title": "Grammar Quiz - {{topic}}",
+    "submit_button": "Submit",
+    "submitting": "Submitting...",
+    "submit_failed": "Could not submit your answers. Please try again.",
+    "back_to_topics": "Back to topics"
   }
 }

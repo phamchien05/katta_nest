@@ -21,9 +21,10 @@ function matchField(actual: unknown, cond: unknown): boolean {
       case 'equals':
         return a === e;
       case 'not':
-        return isPlainObject(expected)
-          ? !matchField(actual, expected)
-          : a !== e;
+        if (isPlainObject(expected)) return !matchField(actual, expected);
+        // Giống SQL: `col <> 'x'` không bao giờ đúng với giá trị NULL (còn `not: null` nghĩa là IS NOT NULL)
+        if (expected === null) return actual !== null && actual !== undefined;
+        return actual !== null && actual !== undefined && a !== e;
       case 'in':
         return (expected as unknown[]).map(comparable).includes(a);
       case 'notIn':
@@ -137,6 +138,11 @@ export class FakeTable<T extends Row> {
     }
     this.rows.push(row);
     return Promise.resolve({ ...row });
+  };
+
+  createMany = ({ data }: { data: Row[] }) => {
+    data.forEach((d) => void this.create({ data: d }));
+    return Promise.resolve({ count: data.length });
   };
 
   update = ({ where, data }: { where: Row; data: Row }) => {

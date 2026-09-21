@@ -8,18 +8,14 @@ import type { users } from '@prisma/client';
 import { pickRandom } from '../common/levels';
 import { GeminiService } from '../gemini/gemini.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { cleanAnswers, gradeAnswers, parseStringArray } from '../common/quiz';
 import {
   buildPrompt,
   GENERAL_LEVELS,
-  isCorrect,
-  parseStringArray,
   SCHEMA,
   Topic,
-  UserAnswer,
   validateGenerated,
 } from './reading.logic';
-
-const MAX_ANSWER_LENGTH = 500;
 
 @Injectable()
 export class ReadingService {
@@ -151,19 +147,13 @@ export class ReadingService {
     });
     if (!passage) throw new NotFoundException('Passage not found.');
 
-    const answers = this.cleanAnswers(rawAnswers);
+    const answers = cleanAnswers(rawAnswers);
     const questions = passage.reading_questions;
     if (questions.some((q) => answers[String(q.id)] === undefined)) {
       throw new BadRequestException('Every question must be answered.');
     }
 
-    let score = 0;
-    const results = questions.map((q) => {
-      const correctAnswer = parseStringArray(q.correct_answer);
-      const ok = isCorrect(q.type, answers[String(q.id)], correctAnswer);
-      if (ok) score++;
-      return { questionId: Number(q.id), isCorrect: ok, correctAnswer };
-    });
+    const { score, results } = gradeAnswers(questions, answers);
 
     const now = new Date();
     await this.prisma.$transaction(async (tx) => {
@@ -196,27 +186,6 @@ export class ReadingService {
     });
 
     return { score, total: questions.length, results };
-  }
-
-  // Chỉ nhận string hoặc mảng string ngắn - bỏ mọi thứ khác (object lồng nhau, số, null...)
-  private cleanAnswers(
-    raw: Record<string, unknown>,
-  ): Record<string, UserAnswer> {
-    const out: Record<string, UserAnswer> = {};
-    for (const [key, value] of Object.entries(raw)) {
-      if (typeof value === 'string' && value.length <= MAX_ANSWER_LENGTH) {
-        out[key] = value;
-      } else if (
-        Array.isArray(value) &&
-        value.length <= 10 &&
-        value.every(
-          (v) => typeof v === 'string' && v.length <= MAX_ANSWER_LENGTH,
-        )
-      ) {
-        out[key] = value as string[];
-      }
-    }
-    return out;
   }
 
   private replenishInBackground(

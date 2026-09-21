@@ -156,6 +156,54 @@
     "false": "Sai (False)",
     "correct": "Đúng",
     "incorrect": "Sai",
-    "correct_answer_label": "Đáp án đúng:"
+    "correct_answer_label": "Đáp án đúng:",
+    "select_all": "(Chọn tất cả đáp án đúng)"
+  },
+  "grammar": {
+    "index_subtitle": "Học các quy tắc ngữ pháp hoặc kiểm tra kiến thức của bạn với các bài tập.",
+    "back_to_home": "← Quay lại Trang chủ",
+    "back_to_grammar": "← Quay lại Ngữ pháp",
+    "card_theory_title": "Xem Lý thuyết",
+    "card_theory_desc": "Khám phá thư viện toàn diện các chủ đề ngữ pháp, được sắp xếp từ cơ bản đến nâng cao.",
+    "card_practice_title": "Bắt đầu luyện tập",
+    "card_practice_desc": "Chọn một chủ đề và giải các bài tập để rèn luyện kỹ năng của bạn.",
+    "empty_content": "Chọn một chủ đề ở bên trái để bắt đầu.",
+    "loading": "Đang tải...",
+    "load_failed": "Không tải được trang này. Vui lòng thử lại.",
+    "practice_select_title": "Chọn chủ đề luyện tập",
+    "practice_select_subtitle": "Chọn điểm ngữ pháp để bắt đầu làm bài thi.",
+    "practice_tab_topics": "Chủ đề",
+    "practice_tab_history": "Các đề đã làm",
+    "practice_history_empty": "Bạn chưa làm bộ đề nào.",
+    "practice_review": "Xem lại",
+    "preparing": "Đang chuẩn bị bộ đề...",
+    "start_failed": "Không bắt đầu được bộ đề. Vui lòng thử lại.",
+    "practice_topics": {
+      "parts-of-speech": {
+        "title": "Các loại từ",
+        "desc": "Học các thành phần cơ bản của câu như danh từ, động từ, tính từ..."
+      },
+      "tenses": {
+        "title": "Thì",
+        "desc": "Nắm vững cách sử dụng thì hiện tại, quá khứ, tương lai..."
+      },
+      "sentence-structures": {
+        "title": "Cấu trúc câu",
+        "desc": "Học cách xây dựng câu hoàn chỉnh và mạch lạc..."
+      },
+      "question-forms": {
+        "title": "Các mẫu câu hỏi",
+        "desc": "Tìm hiểu cách yêu cầu thông tin bằng nhiều dạng câu hỏi khác nhau..."
+      },
+      "common-structures": {
+        "title": "Cấu trúc thông dụng",
+        "desc": "Nắm vững các mẫu câu tiếng Anh thông dụng trong giao tiếp hàng ngày..."
+      }
+    },
+    "quiz_title": "Bài luyện ngữ pháp - {{topic}}",
+    "submit_button": "Nộp bài",
+    "submitting": "Đang nộp bài...",
+    "submit_failed": "Không nộp được bài. Vui lòng thử lại.",
+    "back_to_topics": "Về danh sách chủ đề"
   }
 }

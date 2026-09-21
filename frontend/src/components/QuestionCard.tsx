@@ -96,6 +96,7 @@ export function QuestionCard({ index, type, text, options, value, onChange, resu
 
       {type === 'multi' && (
         <div className="space-y-2">
+          <p className="text-xs text-gray-400">{t('quiz.select_all')}</p>
           {options.map((option) => (
             <label key={option} className={optionClass(selected.includes(option))}>
               <input

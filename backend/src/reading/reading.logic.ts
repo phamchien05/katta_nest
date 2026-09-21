@@ -1,3 +1,9 @@
+import {
+  QUESTION_TYPES,
+  validateQuestions,
+  type GeneratedQuestion,
+} from '../common/quiz';
+
 // 8 chủ đề đúng theo spec - "general" là mục lục theo cấp CEFR (bấm vào sẽ random 1 bài của cấp đó)
 export const TOPICS = [
   'general',
@@ -13,9 +19,6 @@ export type Topic = (typeof TOPICS)[number];
 
 export const GENERAL_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'] as const;
 export const ALL_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
-
-export const QUESTION_TYPES = ['fill', 'boolean', 'mcq', 'multi'] as const;
-export type QuestionType = (typeof QUESTION_TYPES)[number];
 
 const TOPIC_LABELS: Record<Topic, string> = {
   business: 'kinh doanh',
@@ -79,23 +82,13 @@ export const SCHEMA = {
   required: ['title', 'content', 'questions'],
 };
 
-export interface GeneratedQuestion {
-  type: QuestionType;
-  question: string;
-  options: string[];
-  correct_answer: string[];
-}
 export interface GeneratedPassage {
   title: string;
   content: string;
   questions: GeneratedQuestion[];
 }
 
-const isStringArray = (v: unknown): v is string[] =>
-  Array.isArray(v) && v.every((x) => typeof x === 'string');
-
-// Kiểm tra đầu ra của AI trước khi lưu DB - tránh rác, và loại bỏ câu hỏi không thể chấm đúng
-// (đáp án mcq/multi không nằm trong danh sách lựa chọn, đáp án boolean không phải True/False).
+// Kiểm tra đầu ra của AI trước khi lưu DB - tránh rác (xem validateQuestions về các câu không thể chấm đúng)
 export function validateGenerated(raw: unknown): GeneratedPassage | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const r = raw as Record<string, unknown>;
@@ -103,78 +96,12 @@ export function validateGenerated(raw: unknown): GeneratedPassage | null {
     typeof r.title !== 'string' ||
     !r.title.trim() ||
     typeof r.content !== 'string' ||
-    !r.content.trim() ||
-    !Array.isArray(r.questions) ||
-    r.questions.length === 0
+    !r.content.trim()
   ) {
     return null;
   }
-
-  const questions: GeneratedQuestion[] = [];
-  for (const q of r.questions as Record<string, unknown>[]) {
-    if (
-      typeof q?.type !== 'string' ||
-      !(QUESTION_TYPES as readonly string[]).includes(q.type) ||
-      typeof q.question !== 'string' ||
-      !q.question.trim() ||
-      !isStringArray(q.correct_answer) ||
-      q.correct_answer.length === 0
-    ) {
-      return null;
-    }
-    const options = isStringArray(q.options) ? q.options : [];
-    const type = q.type as QuestionType;
-
-    if (type === 'mcq' || type === 'multi') {
-      if (options.length === 0) return null;
-      if (!q.correct_answer.every((a) => options.includes(a))) return null;
-    }
-    if (
-      type === 'boolean' &&
-      !['True', 'False'].includes(q.correct_answer[0])
-    ) {
-      return null;
-    }
-    questions.push({
-      type,
-      question: q.question,
-      options,
-      correct_answer: q.correct_answer,
-    });
-  }
-
-  return { title: r.title.trim(), content: r.content.trim(), questions };
-}
-
-const normalize = (s: unknown): string =>
-  (typeof s === 'string' ? s : '').normalize('NFC').trim().toLowerCase();
-
-export type UserAnswer = string | string[];
-
-// multi: so sánh TẬP đáp án (không phân biệt thứ tự); còn lại: so với đáp án đầu tiên
-export function isCorrect(
-  type: string,
-  userAnswer: UserAnswer | undefined,
-  correctAnswer: string[],
-): boolean {
-  if (type === 'multi') {
-    const user = new Set(
-      (Array.isArray(userAnswer) ? userAnswer : []).map(normalize),
-    );
-    const correct = new Set(correctAnswer.map(normalize));
-    return user.size === correct.size && [...correct].every((c) => user.has(c));
-  }
-  const given = Array.isArray(userAnswer) ? '' : normalize(userAnswer);
-  return given !== '' && given === normalize(correctAnswer[0]);
-}
-
-// Đọc cột JSON kiểu Laravel (options / correct_answer) - hỏng thì coi như mảng rỗng
-export function parseStringArray(json: string | null): string[] {
-  if (!json) return [];
-  try {
-    const parsed: unknown = JSON.parse(json);
-    return isStringArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  const questions = validateQuestions(r.questions, QUESTION_TYPES);
+  return questions
+    ? { title: r.title.trim(), content: r.content.trim(), questions }
+    : null;
 }
